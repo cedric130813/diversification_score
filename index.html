@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Diversification Score Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .mode-label {
+            color: #555;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            padding: 10px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .mode-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .mode-btn:hover {
+            border-color: #667eea;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .holdings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .holding-row {
+            display: grid;
+            grid-template-columns: 1fr 100px auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            color: #555;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+            background: white;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 1.5em;
+            padding-right: 32px;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .remove-btn {
+            padding: 8px 12px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-btn:hover {
+            background: #ff5252;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 12px;
+            margin-top: 3px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .validation-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .validation-status.valid {
+            color: #28a745;
+        }
+
+        .validation-status.invalid {
+            color: #ff6b6b;
+        }
+
+        .validation-status.warning {
+            color: #ffc107;
+        }
+
+        .status-icon {
+            font-size: 14px;
+        }
+
+        .allocation-progress {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .progress-label {
+            color: #555;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 32px;
+            background: #e9ecef;
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .progress-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            min-width: 0;
+            border-radius: 16px;
+        }
+
+        .progress-remaining {
+            flex: 1;
+            text-align: right;
+            padding-right: 12px;
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .add-holding-btn,
+        .clear-all-btn,
+        .example-btn,
+        .calculate-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .add-holding-btn {
+            background: #667eea;
+            color: white;
+            margin-right: 10px;
+            margin-bottom: 15px;
+        }
+
+        .add-holding-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .clear-all-btn {
+            background: #e9ecef;
+            color: #333;
+            margin-left: 10px;
+        }
+
+        .clear-all-btn:hover {
+            background: #dee2e6;
+        }
+
+        .example-btn {
+            background: #17a2b8;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .example-btn:hover {
+            background: #138496;
+        }
+
+        .buttons-row {
+            display: flex;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .calculate-btn {
+            background: #28a745;
+            color: white;
+            padding: 14px 32px;
+            font-size: 16px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .calculate-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .calculate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-title {
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .metric-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .metric-btn {
+            padding: 10px 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #555;
+        }
+
+        .metric-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .metric-btn:hover {
+            border-color: #667eea;
+        }
+
+        .gauge-container {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .gauge-label {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .gauge-bar {
+            width: 100%;
+            height: 40px;
+            background: #e9ecef;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .gauge-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border-radius: 20px;
+        }
+
+        .gauge-fill.poor {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ff8787 100%);
+        }
+
+        .gauge-fill.moderate {
+            background: linear-gradient(90deg, #ffc107 0%, #ffca2c 100%);
+        }
+
+        .gauge-fill.good {
+            background: linear-gradient(90deg, #28a745 0%, #40c057 100%);
+        }
+
+        .gauge-interpretation {
+            color: #555;
+            font-size: 13px;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        .score-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .metrics-table th {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            text-align: left;
+            color: #555;
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .metrics-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .metrics-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .metrics-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .composition-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .breakdown-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .breakdown-card.cash {
+            border-left-color: #17a2b8;
+        }
+
+        .breakdown-card.bonds {
+            border-left-color: #ffc107;
+        }
+
+        .breakdown-label {
+            color: #666;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .breakdown-value {
+            color: #333;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .portfolio-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .portfolio-table th {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            text-align: left;
+            color: #555;
+            font-weight: 600;
+            font-size: 13px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .portfolio-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .portfolio-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .portfolio-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .exchange-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .exchange-badge.nasdaq {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .exchange-badge.nyse {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .exchange-badge.lse {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .exchange-badge.singapore {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .holding-row {
+                grid-template-columns: 1fr;
+            }
+
+            .results-title {
+                font-size: 20px;
+            }
+
+            .composition-breakdown {
+                grid-template-columns: 1fr;
+            }
+
+            .mode-toggle {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .buttons-row {
+                flex-direction: column;
+            }
+
+            .add-holding-btn,
+            .clear-all-btn,
+            .example-btn {
+                width: 100%;
+                margin: 5px 0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Portfolio Diversification Score</h1>
+        <p class="subtitle">Calculate how well-diversified your investment portfolio is</p>
+
+        <!-- Info Section -->
+        <div style="background: #e3f2fd; padding: 16px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #1976d2;">
+            <details style="cursor: pointer;">
+                <summary style="color: #1976d2; font-weight: 600; user-select: none;">ℹ️ What does this calculator measure?</summary>
+                <div style="margin-top: 12px; color: #555; line-height: 1.6; font-size: 14px;">
+                    <p><strong>Position-Level Diversification:</strong> This calculator measures how your capital is spread across different <em>positions</em> (individual holdings). It treats each holding equally at the portfolio level.</p>
+                    
+                    <p><strong>What it SHOWS:</strong></p>
+                    <ul style="margin: 8px 0 8px 20px;">
+                        <li>✓ How many different investments you own</li>
+                        <li>✓ How concentrated your money is in top holdings</li>
+                        <li>✓ Portfolio composition by allocation %</li>
+                        <li>✓ Geographic exposure by exchange</li>
+                    </ul>
+                    
+                    <p><strong>What it DOESN'T capture:</strong></p>
+                    <ul style="margin: 8px 0 8px 20px;">
+                        <li>✗ Underlying diversification within ETFs (e.g., GLOBAL-ETF holds 3500 stocks vs US-STOCK is just 1)</li>
+                        <li>✗ Overlap between holdings (e.g., GLOBAL-ETF + US500-ETF are ~40% overlapped)</li>
+                        <li>✗ Currency exposure differences (SGD vs USD vs GBP)</li>
+                        <li>✗ Correlation between holdings</li>
+                        <li>✗ Industry sector concentration</li>
+                    </ul>
+                    
+                    <p><strong>Example:</strong> A portfolio with 50% US-STOCK + 50% GLOBAL-ETF shows the same position-level diversification as 50% US-STOCK + 50% any other single stock. But true diversification differs because GLOBAL-ETF itself contains thousands of stocks.</p>
+                </div>
+            </details>
+        </div>
+
+        <!-- Main Form -->
+        <form id="portfolioForm" onsubmit="handleCalculate(event)">
+            <!-- Stocks/ETFs Section -->
+            <div class="form-section">
+                <div class="section-title">📈 Stocks & ETFs</div>
+                <div class="holdings-list" id="holdingsList"></div>
+                <div class="buttons-row">
+                    <button type="button" class="add-holding-btn" onclick="addHolding()">+ Add Holding</button>
+                    <button type="button" class="example-btn" onclick="loadExample()">📌 Load Example</button>
+                    <button type="button" class="clear-all-btn" onclick="clearAllHoldings()">Clear All</button>
+                </div>
+                <div class="validation-status" id="equitiesStatus"></div>
+                <div class="allocation-progress">
+                    <div class="progress-label">Portfolio Allocation (Total = 100%)</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%;">
+                            <span id="progressPercent">0%</span>
+                        </div>
+                        <div class="progress-remaining" id="progressRemaining">100% remaining</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cash Section -->
+            <div class="form-section">
+                <div class="section-title">💵 Cash</div>
+                <div class="form-group" style="max-width: 200px;">
+                    <input type="number" id="cashPercentage" placeholder="Cash %" min="0" max="100" step="0.1" value="0" oninput="validatePercentages()">
+                    <span>%</span>
+                </div>
+            </div>
+
+            <!-- Bonds Section -->
+            <div class="form-section">
+                <div class="section-title">💰 Bonds</div>
+                <div class="form-group" style="max-width: 200px;">
+                    <input type="number" id="bondsPercentage" placeholder="Bonds %" min="0" max="100" step="0.1" value="0" oninput="validatePercentages()">
+                    <span>%</span>
+                </div>
+            </div>
+
+            <!-- Total Validation -->
+            <div class="validation-status" id="totalStatus"></div>
+
+            <!-- Calculate Button -->
+            <button type="submit" class="calculate-btn">Calculate Diversification Score</button>
+        </form>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <div class="results-title">📊 Results</div>
+
+            <!-- Metric Selector -->
+            <div class="metric-selector">
+                <button class="metric-btn active" onclick="selectMetric('normalized')">Normalized HHI</button>
+                <button class="metric-btn" onclick="selectMetric('hhi')">HHI (10,000 scale)</button>
+                <button class="metric-btn" onclick="selectMetric('entropy')">Shannon Entropy</button>
+            </div>
+
+            <!-- Main Gauge -->
+            <div class="gauge-container">
+                <div class="score-value" id="scoreValue">0.0</div>
+                <div class="gauge-label" id="metricLabel">Normalized Herfindahl-Hirschman Index (0-100 scale)</div>
+                <div class="gauge-bar">
+                    <div class="gauge-fill poor" id="gaugeFill" style="width: 0%;">
+                        <span id="gaugePercent">0%</span>
+                    </div>
+                </div>
+                <div class="gauge-interpretation" id="interpretation"></div>
+            </div>
+
+            <!-- Composition Breakdown -->
+            <div class="composition-breakdown">
+                <div class="breakdown-card">
+                    <div class="breakdown-label">Equities %</div>
+                    <div class="breakdown-value" id="equityPercent">0%</div>
+                </div>
+                <div class="breakdown-card cash">
+                    <div class="breakdown-label">Cash %</div>
+                    <div class="breakdown-value" id="cashPercent">0%</div>
+                </div>
+                <div class="breakdown-card bonds">
+                    <div class="breakdown-label">Bonds %</div>
+                    <div class="breakdown-value" id="bondsPercent">0%</div>
+                </div>
+            </div>
+
+            <!-- Detailed Metrics Table -->
+            <table class="metrics-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Scale</th>
+                    </tr>
+                </thead>
+                <tbody id="metricsTableBody">
+                </tbody>
+            </table>
+
+            <!-- Portfolio Holdings Table -->
+            <div style="margin-top: 30px;">
+                <h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">📋 Portfolio Holdings</h3>
+                <table class="portfolio-table">
+                    <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Exchange</th>
+                            <th>Underlying Assets</th>
+                            <th>Allocation %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portfolioTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Overlap Warnings -->
+            <div id="overlapWarningsContainer" style="margin-top: 30px; display: none;">
+                <h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">⚠️ Holding Overlap Warnings</h3>
+                <div id="overlapWarningsContent" style="display: flex; flex-direction: column; gap: 12px;"></div>
+            </div>
+
+            <!-- Geographic Breakdown -->
+            <div style="margin-top: 30px;">
+                <h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">🌍 Geographic Exposure</h3>
+                <table class="portfolio-table">
+                    <thead>
+                        <tr>
+                            <th>Exchange / Geography</th>
+                            <th>Tickers</th>
+                            <th>Total Allocation %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="geographicTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Currency Exposure -->
+            <div style="margin-top: 30px;">
+                <h3 style="color: #333; margin-bottom: 15px; font-size: 16px;">💱 Currency Exposure</h3>
+                <table class="portfolio-table">
+                    <thead>
+                        <tr>
+                            <th>Currency</th>
+                            <th>Holdings</th>
+                            <th>Total Allocation %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currencyTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== TICKER DATABASE ====================
+        const tickerDatabase = {
+            'SG-ETF': {
+                name: 'Singapore ETF',
+                exchange: 'Singapore',
+                type: 'ETF',
+                underlyingCount: 30,
+                geography: 'Singapore',
+                currency: 'SGD',
+                description: 'Tracks 30 Singapore-listed stocks'
+            },
+            'CN-ETF': {
+                name: 'China ETF',
+                exchange: 'NYSE',
+                type: 'ETF',
+                underlyingCount: 50,
+                geography: 'China',
+                currency: 'USD',
+                description: 'Tracks 50 Chinese large-cap stocks'
+            },
+            'US-STOCK': {
+                name: 'Large Cap Stock',
+                exchange: 'NYSE',
+                type: 'Stock',
+                underlyingCount: 1,
+                geography: 'USA',
+                currency: 'USD',
+                description: 'Single company stock'
+            },
+            'EM-ETF': {
+                name: 'Emerging Markets ETF',
+                exchange: 'LSE',
+                type: 'ETF',
+                underlyingCount: 500,
+                geography: 'Emerging Markets',
+                currency: 'GBP',
+                description: 'Diversified emerging markets exposure (500+ stocks)'
+            },
+            'EU-ETF': {
+                name: 'Europe ETF',
+                exchange: 'LSE',
+                type: 'ETF',
+                underlyingCount: 400,
+                geography: 'Europe',
+                currency: 'GBP',
+                description: 'Tracks 400+ European stocks (excluding UK)'
+            },
+            'GLOBAL-ETF': {
+                name: 'Global ETF',
+                exchange: 'LSE',
+                type: 'ETF',
+                underlyingCount: 3500,
+                geography: 'Global',
+                currency: 'GBP',
+                description: 'Global diversification (3500+ stocks worldwide)'
+            },
+            'US500-ETF': {
+                name: 'US ETF',
+                exchange: 'LSE',
+                type: 'ETF',
+                underlyingCount: 500,
+                geography: 'USA',
+                currency: 'GBP',
+                description: 'Tracks 500 largest US companies'
+            }
+        };
+
+        // ==================== STATE ====================
+        let holdings = [];
+        let currentMetric = 'normalized';
+
+        // ==================== OVERLAP WARNINGS ====================
+        // These holdings share significant overlap in their underlying stocks
+        const overlapWarnings = {
+            'GLOBAL-ETF-US500-ETF': { level: 'high', overlap: '~40%', reason: 'US500-ETF is ~40% of GLOBAL-ETF holdings' },
+            'GLOBAL-ETF-EM-ETF': { level: 'medium', overlap: '~15%', reason: 'Some Emerging Markets holdings may appear in Global ETF' },
+            'CN-ETF-EM-ETF': { level: 'medium', overlap: '~20%', reason: 'Chinese holdings in both' },
+            'SG-ETF-GLOBAL-ETF': { level: 'low', overlap: '~2%', reason: 'Minimal overlap: different markets' }
+        };
+
+        function getOverlapWarning(ticker1, ticker2) {
+            const key1 = `${ticker1}-${ticker2}`;
+            const key2 = `${ticker2}-${ticker1}`;
+            return overlapWarnings[key1] || overlapWarnings[key2];
+        }
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            addHolding();
+        });
+
+        // ==================== HOLDING MANAGEMENT ====================
+        function addHolding() {
+            const id = Date.now();
+            const holdingRow = document.createElement('div');
+            holdingRow.className = 'holding-row';
+            holdingRow.id = `holding-${id}`;
+            
+            // Generate ticker options
+            const tickerOptions = Object.entries(tickerDatabase)
+                .map(([ticker, info]) => `<option value="${ticker}">${ticker} - ${info.name}</option>`)
+                .join('');
+            
+            holdingRow.innerHTML = `
+                <div class="form-group">
+                    <label>Ticker Symbol</label>
+                    <select class="ticker-input" data-id="${id}" onchange="validatePercentages()">
+                        <option value="">Select a stock or ETF...</option>
+                        ${tickerOptions}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Allocation %</label>
+                    <input type="number" class="allocation-input" data-id="${id}" min="0" max="100" step="0.1" placeholder="0" oninput="validatePercentages()">
+                </div>
+                <button type="button" class="remove-btn" onclick="removeHolding(${id})">Remove</button>
+            `;
+            document.getElementById('holdingsList').appendChild(holdingRow);
+        }
+
+        function removeHolding(id) {
+            document.getElementById(`holding-${id}`).remove();
+            validatePercentages();
+        }
+
+        function clearAllHoldings() {
+            document.getElementById('holdingsList').innerHTML = '';
+            addHolding();
+            validatePercentages();
+        }
+
+        // ==================== PERCENTAGE VALIDATION ====================
+        function validatePercentages() {
+            const allocations = Array.from(document.querySelectorAll('.allocation-input'))
+                .map(input => parseFloat(input.value) || 0);
+            const equitiesTotal = allocations.reduce((sum, val) => sum + val, 0);
+            const cash = parseFloat(document.getElementById('cashPercentage').value) || 0;
+            const bonds = parseFloat(document.getElementById('bondsPercentage').value) || 0;
+            const grandTotal = equitiesTotal + cash + bonds;
+
+            const equitiesStatus = document.getElementById('equitiesStatus');
+            const totalStatus = document.getElementById('totalStatus');
+
+            // Update progress bar to show TOTAL portfolio allocation
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressRemaining = document.getElementById('progressRemaining');
+            
+            progressFill.style.width = Math.min(grandTotal, 100) + '%';
+            progressPercent.textContent = grandTotal.toFixed(1) + '%';
+            
+            const remaining = Math.max(0, 100 - grandTotal);
+            if (remaining <= 0.1) {
+                progressRemaining.textContent = '✓ Complete!';
+                progressRemaining.style.color = '#28a745';
+            } else {
+                progressRemaining.textContent = remaining.toFixed(1) + '% remaining';
+                progressRemaining.style.color = '#666';
+            }
+
+            // Show breakdown of allocations
+            let breakdownText = `Equities: ${equitiesTotal.toFixed(1)}%`;
+            if (cash > 0) breakdownText += `, Cash: ${cash.toFixed(1)}%`;
+            if (bonds > 0) breakdownText += `, Bonds: ${bonds.toFixed(1)}%`;
+            equitiesStatus.innerHTML = `<span class="status-icon">ℹ</span><span>${breakdownText}</span>`;
+            equitiesStatus.className = 'validation-status';
+
+            // Total validation - all should sum to 100%
+            if (Math.abs(grandTotal - 100) < 0.1) {
+                totalStatus.innerHTML = '<span class="status-icon">✓</span><span>Total Portfolio: 100% ✓</span>';
+                totalStatus.className = 'validation-status valid';
+            } else if (grandTotal > 100) {
+                totalStatus.innerHTML = `<span class="status-icon">❌</span><span>Total: ${grandTotal.toFixed(1)}% (exceeds 100%)</span>`;
+                totalStatus.className = 'validation-status invalid';
+            } else {
+                totalStatus.innerHTML = `<span class="status-icon">⚠</span><span>Total: ${grandTotal.toFixed(1)}% (need ${remaining.toFixed(1)}% more to reach 100%)</span>`;
+                totalStatus.className = 'validation-status warning';
+            }
+        }
+
+        // ==================== EXAMPLE PORTFOLIO ====================
+        function loadExample() {
+            clearAllHoldings();
+            const examples = [
+                { ticker: 'US-STOCK', allocation: 25 },
+                { ticker: 'GLOBAL-ETF', allocation: 35 },
+                { ticker: 'US500-ETF', allocation: 20 },
+                { ticker: 'SG-ETF', allocation: 20 }
+            ];
+
+            examples.forEach((ex, index) => {
+                if (index > 0) addHolding();
+                const selects = document.querySelectorAll('.ticker-input');
+                const inputs = document.querySelectorAll('.allocation-input');
+                selects[index].value = ex.ticker;
+                inputs[index].value = ex.allocation;
+            });
+
+            document.getElementById('cashPercentage').value = 0;
+            document.getElementById('bondsPercentage').value = 0;
+            validatePercentages();
+        }
+
+        // ==================== CALCULATION ENGINE ====================
+        function getHoldings() {
+            const holdings = [];
+            document.querySelectorAll('.holding-row').forEach((row) => {
+                const ticker = row.querySelector('.ticker-input').value.toUpperCase();
+                const allocation = parseFloat(row.querySelector('.allocation-input').value) || 0;
+                if (ticker && allocation > 0) {
+                    holdings.push({ ticker, allocation });
+                }
+            });
+            return holdings;
+        }
+
+        function calculateHHI(allocations) {
+            // HHI = sum of (allocation%)^2
+            // Returns value from 0 to 10000
+            if (allocations.length === 0) return 10000;
+            const hhi = allocations.reduce((sum, alloc) => sum + (alloc * alloc), 0);
+            return hhi;
+        }
+
+        function calculateNormalizedHHI(allocations) {
+            // Normalized HHI = (HHI - 1/n) / (10000 - 1/n)
+            // Returns value from 0 to 1, where 0 = perfect diversification
+            if (allocations.length === 0) return 1;
+            const n = allocations.length;
+            const hhi = calculateHHI(allocations);
+            const minHHI = 10000 / n;
+            const normalized = (hhi - minHHI) / (10000 - minHHI);
+            return Math.max(0, Math.min(1, normalized)); // Clamp to 0-1
+        }
+
+        function calculateShannonEntropy(allocations) {
+            // Shannon Entropy = -sum(allocation * ln(allocation))
+            // Returns value from 0 to ln(n)
+            if (allocations.length === 0) return 0;
+            let entropy = 0;
+            allocations.forEach(alloc => {
+                if (alloc > 0) {
+                    const p = alloc / 100;
+                    entropy -= p * Math.log(p);
+                }
+            });
+            const maxEntropy = Math.log(allocations.length);
+            return (entropy / maxEntropy) * 100; // Normalize to 0-100
+        }
+
+        function calculateMetrics(holdings, cash, bonds) {
+            // Calculate metrics including cash and bonds as separate positions
+            const allAllocations = [
+                ...holdings.map(h => h.allocation),
+                ...(cash > 0 ? [cash] : []),
+                ...(bonds > 0 ? [bonds] : [])
+            ];
+
+            const hhi = calculateHHI(allAllocations);
+            const normalized = calculateNormalizedHHI(allAllocations);
+            const entropy = calculateShannonEntropy(allAllocations);
+
+            return {
+                hhi: hhi,
+                normalized: normalized * 100, // Convert to 0-100 scale
+                entropy: entropy,
+                count: allAllocations.length
+            };
+        }
+
+        // ==================== GAUGE SCALING ====================
+        function scaleToGauge(metric, type) {
+            // Scale any metric to 0-100 for gauge display
+            // For "lower is better" metrics (HHI, normalized): invert so high gauge value = good diversification
+            // For "higher is better" metrics (entropy): use as-is
+            switch (type) {
+                case 'hhi':
+                    return 100 - (metric / 100); // HHI: lower is better, so invert
+                case 'normalized':
+                    return 100 - metric; // Normalized HHI: lower is better, so invert
+                case 'entropy':
+                    return metric; // Shannon Entropy: higher is better, use as-is
+                default:
+                    return 0;
+            }
+        }
+
+        function getGaugeClass(value) {
+            if (value < 33) return 'poor';
+            if (value < 66) return 'moderate';
+            return 'good';
+        }
+
+        function getInterpretation(value, metric) {
+            if (value < 33) {
+                return `⚠️ <strong>Poor Diversification</strong><br>Your portfolio is concentrated in a few positions. Consider spreading investments across more holdings.`;
+            } else if (value < 66) {
+                return `📊 <strong>Moderate Diversification</strong><br>Your portfolio has reasonable diversification but could benefit from more positions or asset types.`;
+            } else {
+                return `✅ <strong>Good Diversification</strong><br>Your portfolio is well-diversified across multiple holdings and asset types.`;
+            }
+        }
+
+        // ==================== FORM SUBMISSION ====================
+        function handleCalculate(event) {
+            event.preventDefault();
+
+            const holdings = getHoldings();
+            const cash = parseFloat(document.getElementById('cashPercentage').value) || 0;
+            const bonds = parseFloat(document.getElementById('bondsPercentage').value) || 0;
+
+            // Validation - total portfolio must equal 100%
+            const allocations = holdings.map(h => h.allocation);
+            const equitiesTotal = allocations.reduce((sum, val) => sum + val, 0);
+            const grandTotal = equitiesTotal + cash + bonds;
+
+            let isValid = true;
+
+            if (Math.abs(grandTotal - 100) > 0.1) {
+                alert(`Portfolio total must equal 100% (currently ${grandTotal.toFixed(1)}%). You have ${Math.max(0, 100 - grandTotal).toFixed(1)}% remaining to allocate.`);
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            if (holdings.length === 0) {
+                alert('Please add at least one holding.');
+                return;
+            }
+
+            // Calculate metrics
+            const metrics = calculateMetrics(holdings, cash, bonds);
+
+            // Display results
+            displayResults(holdings, cash, bonds, metrics);
+        }
+
+        // ==================== RESULTS DISPLAY ====================
+        function displayResults(holdings, cash, bonds, metrics) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.add('show');
+
+            // Update composition breakdown
+            const equitiesTotal = holdings.reduce((sum, h) => sum + h.allocation, 0);
+            document.getElementById('equityPercent').textContent = equitiesTotal.toFixed(1) + '%';
+            document.getElementById('cashPercent').textContent = cash.toFixed(1) + '%';
+            document.getElementById('bondsPercent').textContent = bonds.toFixed(1) + '%';
+
+            // Update metrics table
+            const tableBody = document.getElementById('metricsTableBody');
+            tableBody.innerHTML = `
+                <tr>
+                    <td>Herfindahl-Hirschman Index (HHI)</td>
+                    <td>${metrics.hhi.toFixed(2)}</td>
+                    <td>0 - 10,000</td>
+                </tr>
+                <tr>
+                    <td>Normalized HHI</td>
+                    <td>${metrics.normalized.toFixed(2)}</td>
+                    <td>0 - 100</td>
+                </tr>
+                <tr>
+                    <td>Shannon Entropy</td>
+                    <td>${metrics.entropy.toFixed(2)}</td>
+                    <td>0 - 100</td>
+                </tr>
+                <tr>
+                    <td>Number of Positions</td>
+                    <td>${metrics.count}</td>
+                    <td>Count</td>
+                </tr>
+            `;
+
+            // Update portfolio table with ETF composition
+            const portfolioBody = document.getElementById('portfolioTableBody');
+            portfolioBody.innerHTML = holdings.map(h => {
+                const ticker = h.ticker;
+                const info = tickerDatabase[ticker] || { 
+                    name: 'Unknown', 
+                    exchange: 'Unknown',
+                    type: 'Unknown',
+                    underlyingCount: '?',
+                    geography: 'Unknown',
+                    description: ''
+                };
+                const exchangeClass = info.exchange.toLowerCase().replace(/\s+/g, '');
+                const underlyingDisplay = info.underlyingCount === 1 ? 'Single stock' : `${info.underlyingCount}+ stocks`;
+                return `
+                    <tr title="${info.description}">
+                        <td><strong>${ticker}</strong></td>
+                        <td>${info.name}</td>
+                        <td><span style="font-size: 12px; color: #666;">${info.type}</span></td>
+                        <td><span class="exchange-badge ${exchangeClass}">${info.exchange}</span></td>
+                        <td><span style="color: #666; font-size: 13px;">${underlyingDisplay}</span></td>
+                        <td>${h.allocation.toFixed(2)}%</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Generate geographic breakdown
+            const geoBreakdown = {};
+            holdings.forEach(h => {
+                const info = tickerDatabase[h.ticker];
+                const key = info.exchange;
+                if (!geoBreakdown[key]) {
+                    geoBreakdown[key] = { tickers: [], total: 0 };
+                }
+                geoBreakdown[key].tickers.push(h.ticker);
+                geoBreakdown[key].total += h.allocation;
+            });
+
+            const geographicBody = document.getElementById('geographicTableBody');
+            geographicBody.innerHTML = Object.entries(geoBreakdown)
+                .sort((a, b) => b[1].total - a[1].total)
+                .map(([exchange, data]) => {
+                    const exchangeClass = exchange.toLowerCase().replace(/\s+/g, '');
+                    return `
+                        <tr>
+                            <td><span class="exchange-badge ${exchangeClass}">${exchange}</span></td>
+                            <td>${data.tickers.join(', ')}</td>
+                            <td><strong>${data.total.toFixed(2)}%</strong></td>
+                        </tr>
+                    `;
+                }).join('');
+
+            // Generate currency breakdown
+            const currencyBreakdown = {};
+            holdings.forEach(h => {
+                const info = tickerDatabase[h.ticker];
+                const currency = info.currency || 'Unknown';
+                if (!currencyBreakdown[currency]) {
+                    currencyBreakdown[currency] = { tickers: [], total: 0 };
+                }
+                currencyBreakdown[currency].tickers.push(h.ticker);
+                currencyBreakdown[currency].total += h.allocation;
+            });
+
+            const currencyBody = document.getElementById('currencyTableBody');
+            currencyBody.innerHTML = Object.entries(currencyBreakdown)
+                .sort((a, b) => b[1].total - a[1].total)
+                .map(([currency, data]) => {
+                    const flagEmoji = {
+                        'USD': '🇺🇸',
+                        'GBP': '🇬🇧',
+                        'SGD': '🇸🇬',
+                        'CNY': '🇨🇳',
+                        'Unknown': '❓'
+                    }[currency] || '🌍';
+                    return `
+                        <tr>
+                            <td><strong>${flagEmoji} ${currency}</strong></td>
+                            <td>${data.tickers.join(', ')}</td>
+                            <td><strong>${data.total.toFixed(2)}%</strong></td>
+                        </tr>
+                    `;
+                }).join('');
+
+            // Generate overlap warnings
+            const warningContainer = document.getElementById('overlapWarningsContainer');
+            const warningContent = document.getElementById('overlapWarningsContent');
+            const warnings = [];
+
+            for (let i = 0; i < holdings.length; i++) {
+                for (let j = i + 1; j < holdings.length; j++) {
+                    const warning = getOverlapWarning(holdings[i].ticker, holdings[j].ticker);
+                    if (warning) {
+                        warnings.push({
+                            tickers: [holdings[i].ticker, holdings[j].ticker],
+                            ...warning
+                        });
+                    }
+                }
+            }
+
+            if (warnings.length > 0) {
+                warningContainer.style.display = 'block';
+                warningContent.innerHTML = warnings.map(w => {
+                    const levelColor = {
+                        'high': '#ff6b6b',
+                        'medium': '#ffc107',
+                        'low': '#28a745'
+                    }[w.level] || '#666';
+                    const levelLabel = {
+                        'high': '⚠️ High',
+                        'medium': '⚡ Medium',
+                        'low': 'ℹ️ Low'
+                    }[w.level] || 'Unknown';
+                    return `
+                        <div style="padding: 12px; background: #f8f9fa; border-left: 4px solid ${levelColor}; border-radius: 4px;">
+                            <div style="font-weight: 600; color: ${levelColor}; margin-bottom: 4px;">
+                                ${levelLabel} Overlap: ${w.tickers.join(' + ')}
+                            </div>
+                            <div style="color: #555; font-size: 13px;">
+                                ${w.overlap} overlap — ${w.reason}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                warningContainer.style.display = 'none';
+            }
+
+            // Display default metric
+            selectMetric('normalized');
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function selectMetric(metric) {
+            currentMetric = metric;
+            document.querySelectorAll('.metric-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Get current holdings and values
+            const holdings = getHoldings();
+            const cash = parseFloat(document.getElementById('cashPercentage').value) || 0;
+            const bonds = parseFloat(document.getElementById('bondsPercentage').value) || 0;
+            const metrics = calculateMetrics(holdings, cash, bonds);
+
+            let metricValue, label, interpretation;
+
+            switch (metric) {
+                case 'hhi':
+                    metricValue = metrics.hhi;
+                    label = 'Herfindahl-Hirschman Index (0-10,000 scale, lower = more diversified)';
+                    const gaugeHHI = scaleToGauge(metricValue, 'hhi');
+                    break;
+                case 'normalized':
+                    metricValue = metrics.normalized;
+                    label = 'Normalized Herfindahl Index (0-100 scale, lower = more diversified)';
+                    const gaugeNorm = scaleToGauge(metricValue, 'normalized');
+                    break;
+                case 'entropy':
+                    metricValue = metrics.entropy;
+                    label = 'Shannon Entropy (0-100 scale, higher = more diversified)';
+                    const gaugeEntropy = scaleToGauge(metricValue, 'entropy');
+                    break;
+            }
+
+            const gaugeValue = scaleToGauge(metricValue, metric);
+            const gaugeClass = getGaugeClass(gaugeValue);
+
+            // For HHI, invert the interpretation
+            let displayValue = metricValue;
+            if (metric === 'hhi') {
+                displayValue = (100 - gaugeValue);
+            }
+
+            document.getElementById('scoreValue').textContent = displayValue.toFixed(2);
+            document.getElementById('metricLabel').textContent = label;
+            document.getElementById('gaugePercent').textContent = gaugeValue.toFixed(1) + '%';
+
+            const gaugeFill = document.getElementById('gaugeFill');
+            gaugeFill.style.width = gaugeValue + '%';
+            gaugeFill.className = `gauge-fill ${gaugeClass}`;
+
+            interpretation = getInterpretation(gaugeValue, metric);
+            document.getElementById('interpretation').innerHTML = interpretation;
+        }
+    </script>
+</body>
+</html>
