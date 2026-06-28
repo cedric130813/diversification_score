@@ -2,6 +2,8 @@
 
 An interactive single-page web app that quantifies how well-diversified an investment portfolio is across multiple metrics.
 
+<img width="867" height="584" alt="Image" src="https://github.com/user-attachments/assets/939da3ea-13ef-4349-adaf-41f04d991348" />
+
 ## Features
 
 - **Three diversification metrics:**
