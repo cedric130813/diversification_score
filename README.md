@@ -14,8 +14,10 @@ An interactive single-page web app that quantifies how well-diversified an inves
 - **Geographic exposure table** — allocation by exchange/region
 - **Currency exposure table** — allocation by currency
 - **Holding overlap warnings** — flags pairs of holdings with significant underlying overlap
+<img width="867" height="191" alt="Image" src="https://github.com/user-attachments/assets/664e7618-eb48-4c68-829a-7da5d1d8b027" />
 - **Live allocation progress bar** — validates that all positions sum to 100%
 - **Example portfolio** — one-click load to explore the tool
+<img width="867" height="487" alt="Image" src="https://github.com/user-attachments/assets/996a2960-5657-4a67-8a5b-cf37dc8334ac" />
 
 ## How to Use
 
